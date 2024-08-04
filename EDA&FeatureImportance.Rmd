@@ -1,0 +1,56 @@
+---
+title: "Research"
+author: "Radhe Shyam Vatluri"
+date: "2024-05-20"
+output: html_document
+---
+```{r}
+remove(list = ls())
+
+#Add libraries as needed
+library(tidyverse)
+library(readxl)
+library(randomForest)
+library(na.tools)
+library(missForest)
+
+Screener <- read.csv("~/Downloads/finviz-1.csv") 
+```
+
+```{r}
+Screener <- Screener[!is.na(Screener$Price), ]
+
+Screener[is.na(Screener) & sapply(Screener, is.numeric)] <- 0
+Screener[is.na(Screener) & sapply(Screener, is.character)] <- "unknown"
+Screener[is.na(Screener) & sapply(Screener, is.integer)] <- 0
+
+set.seed(123)
+trainInd <- sample(1:nrow(Screener), floor(0.80*nrow(Screener)))
+set.seed(NULL)
+
+Train <- Screener[trainInd,]
+Validation <- Screener[-trainInd,]
+
+str(Screener)
+
+```
+
+```{r}
+rf_model <- randomForest(Price ~ ., 
+                         data = Train, 
+                         ntree = 500, 
+                         mtry = 3, 
+                         importance = TRUE)
+```
+
+
+```{r}
+rf_model$importance
+```
+
+
+```{r}
+varImpPlot(rf_model, n.var = 6)
+```
+
+
